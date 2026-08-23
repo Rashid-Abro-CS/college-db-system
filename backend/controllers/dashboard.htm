@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - College DB System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        /* Container */
+        .container { display: flex; min-height: calc(100vh - 70px); }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar a {
+            display: block;
+            padding: 15px 25px;
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .sidebar a:hover { background: #667eea; color: white; }
+        
+        /* Main Content */
+        .main-content { flex: 1; padding: 30px; }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 500px;
+            max-width: 90%;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th { background: #f8f9fa; }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>🎓 College Database System</h2>
+        <div class="logout-btn" onclick="logout()">Logout</div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <a onclick="showSection('dashboard')">📊 Dashboard</a>
+            <a onclick="showSection('students')">👨‍🎓 Students</a>
+            <a onclick="showSection('courses')">📚 Courses</a>
+        </div>
+
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection">
+                <div class="card">
+                    <h3>Welcome to College Database System!</h3>
+                    <p>Use the sidebar to manage students and courses.</p>
+                </div>
+            </div>
+
+            <!-- Students Section -->
+            <div id="studentsSection" class="hidden">
+                <div class="card">
+                    <h3>Students Management</h3>
+                    <button class="btn btn-primary" onclick="openAddStudentModal()">+ Add Student</button>
+                    <div style="margin-top: 20px; overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr><th>Student ID</th><th>Name</th><th>Email</th><th>Department</th><th>Semester</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="studentsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses Section -->
+            <div id="coursesSection" class="hidden">
+                <div class="card">
+                    <h3>Courses Management</h3>
+                    <p>Course management coming soon...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add New Student</h3>
+            <input type="hidden" id="studentId">
+            <input type="text" id="studentName" placeholder="Full Name" required>
+            <input type="email" id="studentEmail" placeholder="Email" required>
+            <input type="text" id="studentIdNumber" placeholder="Student ID (e.g., 2024CS001)" required>
+            <input type="text" id="enrollmentNumber" placeholder="Enrollment Number" required>
+            <select id="department" required>
+                <option value="">Select Department</option>
+                <option value="CSE">CSE</option>
+                <option value="ECE">ECE</option>
+                <option value="ME">ME</option>
+                <option value="CE">CE</option>
+                <option value="EE">EE</option>
+            </select>
+            <input type="number" id="semester" placeholder="Semester (1-8)" min="1" max="8" required>
+            <input type="text" id="batch" placeholder="Batch (e.g., 2024)" required>
+            <input type="password" id="studentPassword" placeholder="Password (default: Student@123)">
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveStudent()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('token');
+        
+        if (!token) {
+            window.location.href = 'simple-login.html';
+        }
+        
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+            if (data) options.body = JSON.stringify(data);
+            
+            const response = await fetch(`${API_URL}${endpoint}`, options);
+            return await response.json();
+        }
+        
+        function showSection(section) {
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('studentsSection').classList.add('hidden');
+            document.getElementById('coursesSection').classList.add('hidden');
+            
+            document.getElementById(`${section}Section`).classList.remove('hidden');
+            
+            if (section === 'students') loadStudents();
+        }
+        
+        async function loadStudents() {
+            try {
+                const result = await apiCall('/students');
+                if (result.success) {
+                    document.getElementById('studentsList').innerHTML = result.data.map(s => `
+                        <tr>
+                            <td>${s.studentId}</td>
+                            <td>${s.user?.name || 'N/A'}</td>
+                            <td>${s.user?.email || 'N/A'}</td>
+                            <td>${s.department}</td>
+                            <td>Semester ${s.semester}</td>
+                            <td>
+                                <button class="btn btn-warning" onclick="editStudent('${s._id}')">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteStudent('${s._id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+            }
+        }
+        
+        function openAddStudentModal() {
+            document.getElementById('modalTitle').innerText = 'Add New Student';
+            document.getElementById('studentId').value = '';
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentEmail').value = '';
+            document.getElementById('studentIdNumber').value = '';
+            document.getElementById('enrollmentNumber').value = '';
+            document.getElementById('department').value = '';
+            document.getElementById('semester').value = '';
+            document.getElementById('batch').value = new Date().getFullYear();
+            document.getElementById('studentPassword').value = '';
+            document.getElementById('studentModal').style.display = 'flex';
+        }
+        
+        async function editStudent(id) {
+            try {
+                const result = await apiCall(`/students/${id}`);
+                if (result.success) {
+                    const s = result.data;
+                    document.getElementById('modalTitle').innerText = 'Edit Student';
+                    document.getElementById('studentId').value = s._id;
+                    document.getElementById('studentName').value = s.user?.name || '';
+                    document.getElementById('studentEmail').value = s.user?.email || '';
+                    document.getElementById('studentIdNumber').value = s.studentId;
+                    document.getElementById('enrollmentNumber').value = s.enrollmentNumber;
+                    document.getElementById('department').value = s.department;
+                    document.getElementById('semester').value = s.semester;
+                    document.getElementById('batch').value = s.batch;
+                    document.getElementById('studentModal').style.display = 'flex';
+                }
+            } catch (error) {
+                alert('Error loading student: ' + error.message);
+            }
+        }
+        
+        async function saveStudent() {
+            const id = document.getElementById('studentId').value;
+            const data = {
+                name: document.getElementById('studentName').value,
+                email: document.getElementById('studentEmail').value,
+                studentId: document.getElementById('studentIdNumber').value,
+                enrollmentNumber: document.getElementById('enrollmentNumber').value,
+                department: document.getElementById('department').value,
+                semester: parseInt(document.getElementById('semester').value),
+                batch: document.getElementById('batch').value
+            };
+            
+            const password = document.getElementById('studentPassword').value;
+            if (password) data.password = password;
+            
+            try {
+                let result;
+                if (id) {
+                    result = await apiCall(`/students/${id}`, 'PUT', data);
+                } else {
+                    result = await apiCall('/students', 'POST', data);
+                }
+                
+                if (result.success) {
+                    alert(result.message || 'Student saved successfully');
+                    closeModal();
+                    loadStudents();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function deleteStudent(id) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                try {
+                    const result = await apiCall(`/students/${id}`, 'DELETE');
+                    if (result.success) {
+                        alert('Student deleted successfully');
+                        loadStudents();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('studentModal').style.display = 'none';
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'simple-login.html';
+        }
+        
+        showSection('dashboard');
+    </script>
+</body>
+</html>
